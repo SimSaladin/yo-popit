@@ -5,7 +5,4 @@ Requirements
 ------------
 
 - mpd (recent enough: with http streaming support)
-- 
-
-Usage
------
+- mplayer (to get the lengths of songs)
