@@ -66,11 +66,27 @@ Create a crontab file. In the crontab file the 1 hour of silence should be
 noted - In this example the silence begin playing at 7:00 and the actual music
 at 8:00. The command is the name of the playlist relative to playlists/.
 
-      0 7 * * 1 playlist.m3u
+      0 7 * * * playlist.m3u
 
 Then run the `set-wakes.sh` script with the created file as argument. This
 script performs checks:
 
    - playlist exists
    - every song on the playlist exists
+
+
+Clients setup
+-------------
+
+*Important! Fix the --cache and --cache-min values the same on every host!*
+
+To play the stream, setup a mediaplayer to start playing somewhere between 7:00
+and 8:00. Remember to test the mplayer command beforehand!
+
+
+### With cron and mplayer
+
+Insert in crontab:
+
+      45 7 * * * mplayer -cache 1024 -cache-min 50 http://<server>:<port>/mpd.ogg
 
