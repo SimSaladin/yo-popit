@@ -18,9 +18,16 @@ if ([[ $# < 1 ]] || [[ $1 == "--help" ]] || [[ $1 == "-h" ]]); then
 fi
 
 file="$1"
-cat $file | grep -Ev '^#' | cut -d' ' -f 6 | xargs -I{} sh -c \
-   '[[ -s "'$playlists'/{}" ]] \
-   || echo not found: '$playlists'/{}'
+
+test_file_content(){
+   xargs -a "$1" -d'\n' -I{} bash -c '[ -s "{}" ] || echo not found: "{}"' # -i bash -c 'echo ' _ {} \; # [ -s {} ] || echo not found or empty: {}'
+}
+
+export -f test_file_content
+
+cat $file | grep -Ev '^#' | cut -d' ' -f 6 | sed -e "s|^|$playlists/|" | xargs -n 1 -i bash -c \
+   '[ -s "{}" ] || echo playlist not found or empty: {}; \
+   test_file_content "$@"' _ {} | grep "not found" && exit 1
 
 awk '{ print $1,$2,$3,$4,$5,"'$player'",$6 }' < $file > .${file}.new
 

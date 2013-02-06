@@ -22,6 +22,10 @@ print_help(){
     echo
     echo "example:"
     echo "  generate_playlist.sh ./music --last final_countdown.flac"
+    echo 
+    echo "BUGS:     !!!   IMPORTANT   !!!"
+    echo "  * remember to pass at least one --first or --last, or a awk will"
+    echo "    fail in a mystic manner :)"
 }
 
 to_end=()
@@ -102,32 +106,33 @@ construct_playlist(){
 
    total_length=$(cat $fbegin $fpl $fend | awk '{sum+=$1} END {print sum}')
 
-   echo 
-   echo "==> Constructing playlist <=="
-   echo
+   echo "==> Randomizing playlist items <=="
 
    items=$(
-   cat $silence;
-   cat $fbegin;
+   cat $silence $fbegin || echo -e "\n==> Not continuing due to errors <== \n";
 
    (
-   cat $fpl;
-
+   cat $fpl || echo -e "\n==> Not continuing due to errors <== \n";
    cat $favail | sort -R | awk \
       'BEGIN { l = '$total_length'; tl = '$target_length'  } \
-      { if (l < tl) { l += $2; print $0 } else { exit 0 } }'
-   ) | sort -R;
+      { if (l < tl) { l += $2; print $0 } else { exit 0 } }' \
+         || echo -e "\n==> Not continuing due to errors <== \n"
+   ) | sort -R || echo -e "\n==> Not continuing due to errors <== \n";
 
    cat $fend
    )
 
+   # check errors
+   echo $items | grep "==> Not continuing due to errors" >/dev/null && echo "Errors occurred!" && exit 1
+
+   echo "==> Constructing playlist <=="
    echo "$items" \
       | cut -d' ' -f 2- \
       | xargs -d'\n' -I{} realpath {} \
       | tee playlists/playlist.m3u
 
    echo
-   echo "Playlist written as playlists/playlist.m3u. Move it appropriately."
+   echo "DONE Playlist written as playlists/playlist.m3u. Move it appropriately."
    echo
    echo "  Pre-defined: $total_length"
    echo "Target length: $target_length"
