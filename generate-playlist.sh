@@ -3,7 +3,6 @@
 # requirements:
 #     - mplayer
 #     - awk, xargs, cut, tr...
-# TODO: include silence file!
 
 print_help(){ 
     echo
@@ -114,8 +113,8 @@ construct_playlist(){
    (
    cat $fpl || echo -e "\n==> Not continuing due to errors <== \n";
    cat $favail | sort -R | awk \
-      'BEGIN { l = '$total_length'; tl = '$target_length'  } \
-      { if (l < tl) { l += $2; print $0 } else { exit 0 } }' \
+      'BEGIN { l = '$total_length'; tl = '$target_length' } \
+      { if (l < tl - 120) { l += $1; print $0 } else { exit 0 } }' \
          || echo -e "\n==> Not continuing due to errors <== \n"
    ) | sort -R || echo -e "\n==> Not continuing due to errors <== \n";
 
