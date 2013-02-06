@@ -23,7 +23,7 @@ print_help(){
     echo "example:"
     echo "  generate_playlist.sh ./music --last final_countdown.flac"
     echo 
-    echo "BUGS:     !!!   IMPORTANT   !!!"
+    echo "known bugs:  !! IMPORTANT !!"
     echo "  * remember to pass at least one --first or --last, or a awk will"
     echo "    fail in a mystic manner :)"
 }
@@ -145,7 +145,7 @@ case $# in
         exit 1;
         ;;
 
-    *)  ([[ $1 == "--help" ]] || [[ $1 == "-h" ]]) && (print_help; exit 0;);
+    *)  ([[ $1 == "--help" ]] || [[ $1 == "-h" ]]) && print_help && exit 0;
         [[ $1 == "--debug" ]] && DEBUG=1 && shift
 
         directory=$1; shift

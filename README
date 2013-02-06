@@ -6,3 +6,71 @@ Requirements
 
 - mpd (recent enough: with http streaming support)
 - mplayer (to get the lengths of songs)
+
+
+Fetching music from a samba share
+---------------------------------
+
+To fetch music files from a samba share:
+   
+   > cd /opt/pvl-mpd/music
+   > mkdir K13 # change this!
+   > cd K13
+   > smbclient -U<username> //netdisk/work <password>
+   > smb: \> prompt
+   > smb: \> cd YO-popit-K13 # change!
+   > smb: \> mget *
+   > smb: \> quit
+   > mpc update
+
+Constructing a playlist
+-----------------------
+
+First, make sure you have file named silence.m3u in the root (/opt/pvl-mpd).
+This file should be a playlist file, which plays 1 HOUR of silence. For example
+if you have 5 minutes long silence.mp3 in /opt/pvl-mpd/music, the contents of
+the silence.m3u would be 12 lines identical to this:
+
+   /opt/pvl-mpd/music/silence.mp3
+
+Now run the playlist generator script and see the example(s):
+
+   > cd /opt/pvl-mpd
+   > ./generate-playlist.sh --help
+   WARNING: no silence.m3u file
+
+   generate_playlist.sh [options] DIRECTORY [args]
+
+   DIRECTORY should point to the files to randomize among.
+
+   options:
+     --debug     | Run in debug mode.
+     --help, -h  | Show this help.
+
+   arguments:
+     --last,    -l FILE  | Append a song last.
+     --first,   -f FILE  | Insert a song to the beginning.
+     --require, -r FILE  | Require a file included.
+
+   example:
+     generate_playlist.sh ./music --last final_countdown.flac
+
+   known bugs:  !! IMPORTANT !!
+     * remember to pass at least one --first or --last, or a awk will
+       fail in a mystic manner :)
+
+Timing the stream
+-----------------
+
+Create a crontab file. In the crontab file the 1 hour of silence should be
+noted - In this example the silence begin playing at 7:00 and the actual music
+at 8:00. The command is the name of the playlist relative to playlists/.
+
+   0 7 * * 1 playlist.m3u
+
+Then run the `set-wakes.sh` script with the created file as argument. This
+script performs checks:
+
+   - playlist exists
+   - every song on the playlist exists
+
