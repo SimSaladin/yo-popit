@@ -1,0 +1,46 @@
+music_directory      "/opt/pvl-mpd/music/"
+playlist_directory   "/opt/pvl-mpd/playlists/"
+db_file              "/opt/pvl-mpd/.mpd/mpd.db"
+log_file             "/opt/pvl-mpd/.mpd/mpd.log"
+pid_file             "/opt/pvl-mpd/.mpd/mpd.pid"
+state_file           "/opt/pvl-mpd/.mpd/mpd.state"
+sticker_file         "/opt/pvl-mpd/.mpd/sticker.sql"
+port                 "6601"
+log_level            "default"
+auto_update          "yes"
+
+follow_outside_symlinks "yes"
+follow_inside_symlinks  "yes"
+
+# TODO: add password
+
+filesystem_charset   "UTF-8"
+
+audio_output {
+   type                 "pulse"
+   name                 "PVL : RTP stream"
+   sink                 "rtp"
+   description          "PVL: YO-popit"
+   audio_output_format  "44100:16:2"
+   mixer_type           "software"
+   samplerate_converter "Medium Sinc Interpolator"
+}
+
+audio_output {
+   type        "httpd"
+   name        "PVL: mp3 stream"
+   encoder     "lame"
+   port        "8184"
+   bitrate     "256"
+   format      "44100:16:2"
+}
+
+audio_output {
+   type        "httpd"
+   name        "PVL: ogg stream"
+   encoder     "vorbis"
+   port        "8185"
+   quality     "10.0"
+   format      "44100:16:2"
+}
+

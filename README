@@ -6,6 +6,8 @@ Requirements
 
 - mpd (recent enough: with http streaming support)
 - mplayer (to get the lengths of songs)
+- sox (get-files.sh: remove silence)
+- smbclient (get-files.sh: get files via samba)
 
 
 Fetching music from a samba share
@@ -74,9 +76,17 @@ script performs checks:
    - playlist exists
    - every song on the playlist exists
 
+Clients - pulseaudio
+--------------------
+
+1. Make sure pulseaudio is installed.
+2. `sudo tee /etc/pulseaudio/default.pa < default.pa-client`
+2. Restart pulseaudio.
 
 Clients setup
 -------------
+
+*OLD: please reference the pulseaudio/vlc section*
 
 *Important! Fix the --cache and --cache-min values the same on every host!*
 
