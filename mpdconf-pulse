@@ -31,7 +31,7 @@ audio_output {
    name        "PVL: mp3 stream"
    encoder     "lame"
    port        "8184"
-   bitrate     "256"
+   bitrate     "320"
    format      "44100:16:2"
 }
 
@@ -43,4 +43,3 @@ audio_output {
    quality     "10.0"
    format      "44100:16:2"
 }
-

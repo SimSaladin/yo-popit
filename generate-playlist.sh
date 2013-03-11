@@ -39,7 +39,10 @@ fbegin="/tmp/begin.tmp"
 fpl="/tmp/pl.tmp"
 silence="$(realpath $(dirname $(realpath $0)))/silence.m3u"
 
-[[ -s $silence ]] || echo "WARNING: no silence.m3u file"
+if [[ ! -s $silence ]]; then
+   echo "FATAL: no silence.m3u file"
+   exit
+fi
 
 parse_args(){
     case $# in
