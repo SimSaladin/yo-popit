@@ -1,5 +1,8 @@
 #!/bin/bash
 
+PID=/run/user/$UID/yo-popit.pid
+LOG_FILE=/tmp/yo-popit.log
+
 mpc="mpc -p 6601"
 
 $mpc clear
@@ -17,3 +20,22 @@ $mpc replaygain off
 $mpc enable 1
 
 sleep 2 && $mpc play
+
+VLC_COMMAND="/opt/pvl-mpd/streams.sh \
+   --pidfile $PID --daemon \
+   --no-color \
+   --file-logging --logfile $LOG_FILE \
+   --play-and-exit"
+
+run_streams(){
+   echo
+   echo "------ restarting rtsp stream.. ------"
+   echo
+   $VLC_COMMAND
+}
+
+while sleep 2; do
+   if [[ ! -f "$PID" ]]; then
+      run_streams
+   fi
+done

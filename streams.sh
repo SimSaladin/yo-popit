@@ -2,7 +2,7 @@
 #-----------------------------------------------------------------------------
 # File:          streams.sh
 # Creation Date: Feb 08 2013 [21:12:04]
-# Last Modified: Mar 11 2013 [11:25:07]
+# Last Modified: Mar 13 2013 [17:46:11]
 # Created By: Samuli Thomasson [SimSaladin] samuli.thomassonAtpaivola.fi
 #-----------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@ TRANSCODE="transcode{acodec=a52,ab=246,channels=2}"
 
 RTP_HQ="rtp{dst=194.197.235.93,port=8182,sdp=rtsp://0.0.0.0:8183/stream.sdp}"
 
-cvlc http://ssdesk.paivola.fi:8184/asdf --sout "#$RTP_HQ"
+cvlc http://ssdesk.paivola.fi:8184/asdf --sout "#$RTP_HQ" $@
 
 # from pulseaudio rtp
 # XXX: fails with wrong output format or what?
