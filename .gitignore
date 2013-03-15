@@ -1,1 +1,5 @@
 .mpd
+
+playlists/*
+music/*
+!.gitkeep
