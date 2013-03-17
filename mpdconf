@@ -16,15 +16,15 @@ follow_inside_symlinks  "yes"
 
 filesystem_charset   "UTF-8"
 
-audio_output {
-   type                 "pulse"
-   name                 "PVL : RTP stream"
-   sink                 "rtp"
-   description          "PVL: YO-popit"
-   audio_output_format  "44100:16:2"
-   mixer_type           "software"
-   samplerate_converter "Medium Sinc Interpolator"
-}
+#audio_output {
+#   type                 "pulse"
+#   name                 "PVL : RTP stream"
+#   sink                 "rtp"
+#   description          "PVL: YO-popit"
+#   audio_output_format  "44100:16:2"
+#   mixer_type           "software"
+#   samplerate_converter "Medium Sinc Interpolator"
+#}
 
 audio_output {
    type        "httpd"
