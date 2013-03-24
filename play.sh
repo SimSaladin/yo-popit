@@ -34,8 +34,11 @@ run_streams(){
    $VLC_COMMAND
 }
 
-while sleep 2; do
+while (sleep 2; [[ ! -e /tmp/yo-popit-play.stop ]]); do
    if [[ ! -f "$PID" ]]; then
       run_streams
    fi
 done
+
+rm /tmp/yo-popit-play.stop
+

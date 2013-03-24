@@ -32,7 +32,10 @@ crontab /dev/stdin << EOF
 
 # YO-popit
 # TODO: Pipe mplayer log and restart stream if it starts lagging.
-55 6 * * * bash -c "while (sleep 2; [[ \$(date +%H) -lt 8 ]]); do $mplayer --no-joystick rtsp://ssdesk.paivola.fi:8183/stream.sdp; done && crontab -r"
+50 6 * * * bash -c "while (sleep 2; [[ ! -e /tmp/yo-popit.stop ]]); do $mplayer --really-quiet --no-joystick rtsp://ssdesk.paivola.fi:8183/stream.sdp; echo 'mplayer exited'; done; rm /tmp/yo-popit.stop"
+55 7 * * * touch /tmp/yo-popit.stop
+56 7 * * * crontab -r
+
 
 EOF
 
