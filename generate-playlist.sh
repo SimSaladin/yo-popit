@@ -23,7 +23,7 @@ print_help(){
     echo "  generate_playlist.sh ./music --last final_countdown.flac"
     echo 
     echo "known bugs:  !! IMPORTANT !!"
-    echo "  * remember to pass at least one --first or --last, or a awk will"
+    echo "  * remember to pass at least one --first or --last, or awk will"
     echo "    fail in a mystic manner :)"
 }
 
