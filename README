@@ -4,26 +4,39 @@ PVL yo-popit
 Requirements
 ------------
 
-- mpd (recent enough: with http streaming support)
-- mplayer (to get the lengths of songs)
-- sox (get-files.sh: remove silence)
-- smbclient (get-files.sh: get files via samba)
+On the server:
+
+- *cron*
+- *mpd* (recent enough, need HTTP streaming support)
+- *vlc* (to construct a fully synced rtp/rtsp stream)
+- *mplayer* (used to parse lengths of songs. TODO: could use mediainfo (or sox?))
+- *sox* (get-files.sh, to remove preceding and trailing silence)
+- *smbclient* (get-files.sh: get files via samba) OPTIONAL
+
+On clients:
+
+- *cron*
+- *mplayer2* (mplayer1 has problems with rtsp streams; the stream shears after a
+              few seconds)
 
 
-Fetching music from a samba share
+Preparing the music files
 ---------------------------------
 
-To fetch music files from a samba share:
-   
-      $ cd /opt/pvl-mpd/music
-      $ mkdir K13 # change this!
-      $ cd K13
-      $ smbclient -U<username> //netdisk/work <password>
-      $ smb: \> prompt
-      $ smb: \> cd YO-popit-K13 # change!
-      $ smb: \> mget *
-      $ smb: \> quit
-      $ mpc update
+To fetch the music files from a samba share run the script `get-files.sh`:
+
+      get-files.sh <server> <share> <dir> <username> [<password>]
+      get-files.sh NETDISK work YO-popit-K13 *****
+
+This fetches music via samba to the music/ directory.
+
+Next run `master_files.sh <music directory>`, which removes silence from the
+files in directory `<music directory>`. Note that this uses `sox`, which doesn't
+support some exotic formats such as ape or m4a. run the script with no arguments
+for help with these (convert via `shnconv`).
+
+The output folder is `<music directory>-mastered`.
+
 
 Constructing a playlist
 -----------------------
@@ -35,7 +48,7 @@ the silence.m3u would be 12 lines identical to this:
 
       /opt/pvl-mpd/music/silence.mp3
 
-Now run the playlist generator script and see the example(s):
+Now run the playlist generator script with appropriate arguments:
 
       $ cd /opt/pvl-mpd
       $ ./generate-playlist.sh --help
@@ -58,45 +71,46 @@ Now run the playlist generator script and see the example(s):
         generate_playlist.sh ./music --last final_countdown.flac
 
       known bugs:  !! IMPORTANT !!
-        * remember to pass at least one --first or --last, or a awk will
+        * remember to pass at least one --first or --last, or awk will
           fail in a mystic manner :)
+
+As an example something along the lines of
+
+      generate_playlist.sh music/YO-popit-K13-masterd \
+         --last music/01\ -\ The\ Final\ Countdown.flac \
+         --first music/KaW\ -\ Dawn.mp3
+
+NOTE: there's a problem with --require: it doesn't exclude the files from the
+      randomized part.
+
+NOTE: This script could be made better: it should not recalculate the song
+      lengths on every run. Instead cache them. Also, /tmp/* files are used.
+
+The script should have created a playlist named `playlist`. Launch ncmpcpp or
+similar and check the playlist, or just use `cat`.
 
 Timing the stream
 -----------------
 
-Create a crontab file. In the crontab file the 1 hour of silence should be
-noted - In this example the silence begin playing at 7:00 and the actual music
-at 8:00. The command is the name of the playlist relative to playlists/.
+Test the stream by running `play.sh <playlist>`.
 
-      0 7 * * * playlist.m3u
+Add this to your crontab with `crontab -e`.  Remember to account for the 1 hour
+of silence!
 
-Then run the `set-wakes.sh` script with the created file as argument. This
-script performs checks:
+Here the silence begin playing at 7:00 and the actual music at 8:00. The
+argument for the play.sh is a playlist in the `playlist` directory:
 
-   - playlist exists
-   - every song on the playlist exists
+      0 7 * * * /opt/yo-popit/play.sh playlist
 
-Clients - pulseaudio
---------------------
+Setup the clients
+-----------------
 
-1. Make sure pulseaudio is installed.
-2. `sudo tee /etc/pulseaudio/default.pa < default.pa-client`
-2. Restart pulseaudio.
+Run the script client-script.sh on the client. You can serve it from a network
+location, wget and pipe it to sh:
 
-Clients setup
--------------
+      wget http://hostname/script.sh -qO- | sh
 
-*OLD: please reference the pulseaudio/vlc section*
+The script makes sure you have the right version of mplayer, cron is running and
+rewrites your crontab.
 
-*Important! Fix the --cache and --cache-min values the same on every host!*
-
-To play the stream, setup a mediaplayer to start playing somewhere between 7:00
-and 8:00. Remember to test the mplayer command beforehand!
-
-
-### With cron and mplayer
-
-Insert in crontab:
-
-      45 7 * * * mplayer -cache 1024 -cache-min 50 http://<server>:<port>/mpd.ogg
-
+NOTE: Remember to test the mplayer command beforehand!
