@@ -1,0 +1,13 @@
+
+# Streaming settings
+HOST=194.197.235.93  # Public IP - IMPORTANT, streaming goes via direct UDP
+RTP_PORT=8182        # Stream port
+SDP_PORT=8183        # SDP, syncing protocol port
+
+# MPD Settings
+MPD_URL="http://ssdesk.paivola.fi:8184/asdf" # MPD's http streaming url
+mpc="mpc -p 6601"                            # command to run mpc
+SILENCE_FILE=music/silence.ogg
+
+PID=/run/user/$UID/yo-popit.pid
+LOG_FILE=/tmp/yo-popit.log

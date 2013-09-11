@@ -4,99 +4,82 @@ PVL yo-popit
 Requirements
 ------------
 
+### streaming
+
 - mpd (recent enough: with http streaming support)
+- mpc (interacting with mpd from scripts)
 - mplayer (to get the lengths of songs)
+- vlc (rtsp stream)
+
+### other operations
+
 - sox (get-files.sh: remove silence)
 - smbclient (get-files.sh: get files via samba)
 
+Step 0: Setup
+-------------
 
-Fetching music from a samba share
----------------------------------
+Setup parameters in file settings.
 
-To fetch music files from a samba share:
+Start MPD with the provided config: `mpd mpdconf`.
+
+Step 1: Fetch music from samba
+------------------------------
    
       $ cd /opt/pvl-mpd/music
-      $ mkdir K13 # change this!
+      $ mkdir K13 # Change me!
       $ cd K13
       $ smbclient -U<username> //netdisk/work <password>
       $ smb: \> prompt
-      $ smb: \> cd YO-popit-K13 # change!
+      $ smb: \> cd YO-popit-K13 # Change me!
       $ smb: \> mget *
       $ smb: \> quit
       $ mpc update
 
-Constructing a playlist
------------------------
+Step 2: Construct the playlist
+------------------------------
 
-First, make sure you have file named silence.m3u in the root (/opt/pvl-mpd).
-This file should be a playlist file, which plays 1 HOUR of silence. For example
-if you have 5 minutes long silence.mp3 in /opt/pvl-mpd/music, the contents of
-the silence.m3u would be 12 lines identical to this:
+By streaming a track of silence we give clients time to connect before the music
+stream.  There is a default 5min music/silence.ogg, which is added to the
+beginning of playlists, and can be changed in settings.
 
-      /opt/pvl-mpd/music/silence.mp3
-
-Now run the playlist generator script and see the example(s):
+Generate the playlist with `bin/generate_playlist.sh`:
 
       $ cd /opt/pvl-mpd
-      $ ./generate-playlist.sh --help
-      WARNING: no silence.m3u file
+      $ bin/generate_playlist.sh --help
+      $ ...
+      $ generate_playlist.sh ./music --last final_countdown.flac
 
-      generate_playlist.sh [options] DIRECTORY [args]
+Step 3: Timing the stream
+-------------------------
 
-      DIRECTORY should point to the files to randomize among.
+Timing the stream is done via cron. The script `bin/set_wake.sh PLAYLIST`
+overwrites the crontab of the current user. Example: `bin/set_wake.sh
+playlist.m3u`.
 
-      options:
-        --debug     | Run in debug mode.
-        --help, -h  | Show this help.
+Step 4: Testing
+---------------
 
-      arguments:
-        --last,    -l FILE  | Append a song last.
-        --first,   -f FILE  | Insert a song to the beginning.
-        --require, -r FILE  | Require a file included.
+Start streaming a playlist with `bin/start_stream.sh PLAYLIST`.  Test the stream
+with `mplayer rtsp://HOST:PORT/stream.sdp`.  Default port is 8183.
 
-      example:
-        generate_playlist.sh ./music --last final_countdown.flac
+Step 5: Clients
+---------------
 
-      known bugs:  !! IMPORTANT !!
-        * remember to pass at least one --first or --last, or a awk will
-          fail in a mystic manner :)
+Clients must have:
+a) Clocks synced (NTP)
+b) Cron running
+c) Mplayer2 available
 
-Timing the stream
------------------
+To setup the stream set the two parameters in the `client_script.sh`, and run it
+on every client. It will check points b and c, and set the appropriate cron job.
+The cron job cleans self up when done.
 
-Create a crontab file. In the crontab file the 1 hour of silence should be
-noted - In this example the silence begin playing at 7:00 and the actual music
-at 8:00. The command is the name of the playlist relative to playlists/.
+An easy way to run the script on clients is to publish it on a HTTP server in
+some URL, and then on every client just do
 
-      0 7 * * * playlist.m3u
+      $ wget $URL -O- | bash
 
-Then run the `set-wakes.sh` script with the created file as argument. This
-script performs checks:
-
-   - playlist exists
-   - every song on the playlist exists
-
-Clients - pulseaudio
---------------------
-
-1. Make sure pulseaudio is installed.
-2. `sudo tee /etc/pulseaudio/default.pa < default.pa-client`
-2. Restart pulseaudio.
-
-Clients setup
--------------
-
-*OLD: please reference the pulseaudio/vlc section*
-
-*Important! Fix the --cache and --cache-min values the same on every host!*
-
-To play the stream, setup a mediaplayer to start playing somewhere between 7:00
-and 8:00. Remember to test the mplayer command beforehand!
-
-
-### With cron and mplayer
-
-Insert in crontab:
-
-      45 7 * * * mplayer -cache 1024 -cache-min 50 http://<server>:<port>/mpd.ogg
+Repeat the previous step for every client. Make sure that the stream works, and
+that sound volume is good.
 

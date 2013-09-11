@@ -1,3 +1,8 @@
+# FIX these
+HOST=ssdesk.paivola.fi
+PORT=8183
+
+# --- 
 
 suc(){
    echo "[ OK ]" $@
@@ -30,9 +35,8 @@ echo "[ .. ] Installing the crontab..."
 
 crontab /dev/stdin << EOF
 
-# YO-popit
-# TODO: Pipe mplayer log and restart stream if it starts lagging.
-55 6 * * * bash -c "while (sleep 2; [[ \$(date +%H) -lt 8 ]]); do $mplayer --no-joystick rtsp://ssdesk.paivola.fi:8183/stream.sdp; done && crontab -r"
+# YO-popit - cleans self up when done!
+56 6 * * * bash -c "while (sleep 2; [[ \$(date +%H) -lt 8 ]]); do $mplayer --no-joystick rtsp://$HOST:$PORT/stream.sdp; done && crontab -r"
 
 EOF
 
