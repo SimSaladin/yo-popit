@@ -4,17 +4,21 @@ PVL yo-popit
 Requirements
 ------------
 
-### streaming
+### Streaming
 
-- mpd (recent enough: with http streaming support)
-- mpc (interacting with mpd from scripts)
-- mplayer (to get the lengths of songs)
-- vlc (rtsp stream)
 
-### other operations
+- *cron*
+- *mpd* (recent enough, need HTTP streaming support)
+- *mpc* (interacting with mpd from scripts)
+- *vlc* (to construct a fully synced rtp/rtsp stream)
+- *mplayer* (used to parse lengths of songs. TODO: could use mediainfo (or sox?))
+- *sox* (get_files.sh, to remove preceding and trailing silence)
+- *smbclient* (get_files.sh: get files via samba)
 
-- sox (get-files.sh: remove silence)
-- smbclient (get-files.sh: get files via samba)
+### Clients
+
+- *cron*
+- *mplayer2* (mplayer1 has problems with rtsp streams; the stream shears after a few seconds)
 
 Step 0: Setup
 -------------
@@ -25,30 +29,40 @@ Start MPD with the provided config: `mpd mpdconf`.
 
 Step 1: Fetch music from samba
 ------------------------------
-   
-      $ cd /opt/pvl-mpd/music
-      $ mkdir K13 # Change me!
-      $ cd K13
-      $ smbclient -U<username> //netdisk/work <password>
-      $ smb: \> prompt
-      $ smb: \> cd YO-popit-K13 # Change me!
-      $ smb: \> mget *
-      $ smb: \> quit
-      $ mpc update
+
+To fetch the music files from a samba share run the script `get_files.sh`:
+
+      get-files.sh <server> <share> <dir> <username> [<password>]
+      get-files.sh NETDISK work YO-popit-K13 *****
+
+This fetches music via samba to the **music/** directory.
+
+Next run `master_files.sh <music directory>`, which removes silence from the
+files. Note that this uses `sox`, which doesn't support some exotic formats such
+as ape or m4a. run the script with no arguments to get help for these (tl;dr:
+convert via `shnconv`).
+
+The output folder will be `<music directory>-mastered`.
 
 Step 2: Construct the playlist
 ------------------------------
 
 By streaming a track of silence we give clients time to connect before the music
 stream.  There is a default 5min music/silence.ogg, which is added to the
-beginning of playlists, and can be changed in settings.
+beginning of all generated playlists. The file can be changed in *settings*.
 
-Generate the playlist with `bin/generate_playlist.sh`:
+Run the playlist generator script with appropriate arguments:
 
-      $ cd /opt/pvl-mpd
       $ bin/generate_playlist.sh --help
       $ ...
       $ generate_playlist.sh ./music --last final_countdown.flac
+
+NOTE: there's a problem with --require: it doesn't exclude the files from the
+      randomized part.
+
+NOTE: This script could be made better: it should not recalculate the song
+      lengths on every run, instead cache them. Also, some file are saved to
+      /tmp/.
 
 Step 3: Timing the stream
 -------------------------
@@ -75,11 +89,10 @@ To setup the stream set the two parameters in the `client_script.sh`, and run it
 on every client. It will check points b and c, and set the appropriate cron job.
 The cron job cleans self up when done.
 
-An easy way to run the script on clients is to publish it on a HTTP server in
-some URL, and then on every client just do
+An easy way to run the script on clients is to serve it from a HTTP server at
+$URL, and then on every client just run
 
       $ wget $URL -O- | bash
 
-Repeat the previous step for every client. Make sure that the stream works, and
-that sound volume is good.
-
+NOTE: Repeat the previous testing step for every client. Make sure that the
+      stream works, and that sound volume is good.
